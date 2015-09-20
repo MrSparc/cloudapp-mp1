@@ -1,4 +1,6 @@
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -53,7 +55,61 @@ public class MP1 {
         String[] ret = new String[20];
        
         //TODO
+        ArrayList<String> lines = new ArrayList<String>();
+        try (BufferedReader br = new BufferedReader(new FileReader(this.inputFileName))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                lines.add(line);
+            }
+        }
+        
+        ArrayList<String> listStopWords = new ArrayList<String>(Arrays.asList(this.stopWordsArray));
+        ArrayList<String> listWords = new ArrayList<String>();
+        
+        Map<String, Integer> wordCount = new HashMap<>();
+        Integer n;
+        
+        for (Integer i : getIndexes()){
+            // 1. Divide each sentence into a list of words using delimiters provided in the "delimiters" variable.
+            StringTokenizer st = new StringTokenizer(lines.get(i), this.delimiters);
+            while (st.hasMoreTokens()) {
+                // 2. Make all the tokens lower-case and remove any tailing and leading spaces.
+                String word = st.nextToken().toLowerCase().trim();
+                     
+                // 3. Ignore all common words provided in the "stopWordsArray" variable
+                if (listStopWords.contains(word))
+                    continue;
+                     
+                 n = wordCount.get(word);
+                 n = (n == null) ? 1 : ++n;
+                 wordCount.put(word, n);
+            }
+        }
+        // Convert map to list of <String,Integer> entries
+        List<Map.Entry<String, Integer>> list = 
+            new ArrayList<Map.Entry<String, Integer>>(wordCount.entrySet());
 
+        // Sort list by integer values
+        Collections.sort(list, new Comparator<Map.Entry<String, Integer>>() {
+            public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
+                // compare o2 to o1, instead of o1 to o2, to get descending freq. order
+                int cmp = (o2.getValue()).compareTo(o1.getValue());
+                if (cmp != 0)
+                        return cmp;
+                return (o1.getKey()).compareTo(o2.getKey());
+            }
+        });
+
+        // Populate the result into a list
+        List<String> result = new ArrayList<String>();
+        for (Map.Entry<String, Integer> entry : list) {
+                result.add(entry.getKey());
+            //result.add( "(" + entry.getKey() + "," + entry.getValue() + ")");
+        }
+        
+        for (int i=0; i < 20; ++i) {
+                ret[i] = result.get(i);
+        }
         return ret;
     }
 
